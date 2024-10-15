@@ -19,7 +19,7 @@ type MazeCell = {
   isExit?: boolean;
 };
 
-type MazeSize = 10 | 20 | 30;
+type MazeSize = 10 | 15 | 20;
 
 function App() {
   const [mazeSize, setMazeSize] = useState<MazeSize>(10);
@@ -221,8 +221,8 @@ function App() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="10">10x10 (Easy Peasy!)</SelectItem>
-              <SelectItem value="20">20x20 (Getting Tricky!)</SelectItem>
-              <SelectItem value="30">30x30 (Super Challenge!)</SelectItem>
+              <SelectItem value="15">15x15 (Getting Tricky!)</SelectItem>
+              <SelectItem value="20">20x20 (Super Challenge!)</SelectItem>
             </SelectContent>
           </Select>
         </div>
