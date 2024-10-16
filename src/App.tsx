@@ -27,7 +27,7 @@ function App() {
   const [avatarPosition, setAvatarPosition] = useState<{
     x: number;
     y: number;
-  } | null>(null);
+  }>({ x: 0, y: 0 });
   const mazeRef = useRef<HTMLDivElement>(null);
   const [showAvatar, setShowAvatar] = useState(true);
 
@@ -199,6 +199,63 @@ function App() {
     }
   };
 
+  const isGameWon =
+    avatarPosition.x === mazeSize - 1 && avatarPosition.y === mazeSize - 1;
+
+  const moveAvatar = useCallback(
+    (dx: number, dy: number) => {
+      if (isGameWon) return;
+      setAvatarPosition((prev) => {
+        const newX = prev.x + dx;
+        const newY = prev.y + dy;
+
+        // Check if the new position is valid (within maze bounds and no wall)
+        if (newX >= 0 && newX < mazeSize && newY >= 0 && newY < mazeSize) {
+          const currentCell = maze[prev.y][prev.x];
+          if (
+            (dx === 1 && !currentCell.walls.right) ||
+            (dx === -1 && !currentCell.walls.left) ||
+            (dy === 1 && !currentCell.walls.bottom) ||
+            (dy === -1 && !currentCell.walls.top)
+          ) {
+            return { x: newX, y: newY };
+          }
+        }
+        return prev;
+      });
+    },
+    [maze, mazeSize, isGameWon]
+  );
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      switch (event.key) {
+        case "ArrowUp":
+          moveAvatar(0, -1);
+          break;
+        case "ArrowDown":
+          moveAvatar(0, 1);
+          break;
+        case "ArrowLeft":
+          moveAvatar(-1, 0);
+          break;
+        case "ArrowRight":
+          moveAvatar(1, 0);
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [moveAvatar, isGameWon]);
+
+  const startNewGame = () => {
+    generateMaze();
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-blue-300 to-purple-300 p-4">
       <div className="bg-white rounded-lg shadow-2xl p-6 w-full max-w-3xl">
@@ -275,11 +332,13 @@ function App() {
                       avatarPosition &&
                       avatarPosition.x === x &&
                       avatarPosition.y === y && (
-                        <img
-                          src="/avatar.png"
-                          alt="Fox Avatar"
-                          className="absolute inset-0 w-full h-full object-contain z-10 transition-transform duration-300 ease-in-out transform hover:scale-110"
-                        />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <img
+                            src="/avatar.png"
+                            alt="Avatar"
+                            className="w-3/4 h-3/4 object-contain"
+                          />
+                        </div>
                       )}
                   </div>
                 </div>
@@ -308,6 +367,15 @@ function App() {
           </Button>
         </div>
       </div>
+      {isGameWon && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-8 rounded-lg text-center">
+            <h2 className="text-2xl font-bold mb-4">Congratulations!</h2>
+            <p className="mb-4">You've successfully navigated the maze!</p>
+            <Button onClick={startNewGame}>Start New Game</Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
